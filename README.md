@@ -1,2 +1,2 @@
 # dTheta
-A python app for analyzing the HRTEM photo
+A python script for analyzing the HRTEM photo
