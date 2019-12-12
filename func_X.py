@@ -150,32 +150,193 @@ class Xyy():
 
         # 生成三个包含同一组晶面的dataframe的list
         expod1, expod2, expod3 = [], [], []
-        # 立方晶系48，四方晶系16，六方晶系8，正交晶系8，单斜晶系4，三斜(三方，有疑问)晶系2
+        # 立方晶系48，六方晶系24，四方晶系16，三方晶系12，正交晶系8，单斜晶系4，三斜晶系2
 
-        h = pod1[['h']]
-        k = pod1[['k']]
-        l = pod1[['l']]
-        sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
-        for x in sel:
-            ss = [p for p in permutations(x)]
-            for y in ss:
-                expod1.append(pd.concat(y, axis=1))
-        h = pod2[['h']]
-        k = pod2[['k']]
-        l = pod2[['l']]
-        sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
-        for x in sel:
-            ss = [p for p in permutations(x)]
-            for y in ss:
-                expod2.append(pd.concat(y, axis=1))
-        h = pod3[['h']]
-        k = pod3[['k']]
-        l = pod3[['l']]
-        sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
-        for x in sel:
-            ss = [p for p in permutations(x)]
-            for y in ss:
-                expod3.append(pd.concat(y, axis=1))
+        # 立方晶系指数位置符号均可独立改变，共48种可能变换
+        if self.cryForm == 'Cubic':
+            h = pod1[['h']]
+            k = pod1[['k']]
+            l = pod1[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                ss = [p for p in permutations(x)]
+                for y in ss:
+                    expod1.append(pd.concat(y, axis=1))
+            h = pod2[['h']]
+            k = pod2[['k']]
+            l = pod2[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                ss = [p for p in permutations(x)]
+                for y in ss:
+                    expod2.append(pd.concat(y, axis=1))
+            h = pod3[['h']]
+            k = pod3[['k']]
+            l = pod3[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                ss = [p for p in permutations(x)]
+                for y in ss:
+                    expod3.append(pd.concat(y, axis=1))
+        # 六方晶系i=-(h+k)，可以从四指数中h、k、i任取两个作为三指数的h、k，三指数中h、k位置可互换,符号需一起变，l可任意改变符号，故共24种可能变换
+        elif self.cryForm == 'Hexagonal':
+            _h = pod1[['h']]
+            _k = pod1[['k']]
+            _i = -h-k
+            l = pod1[['l']]
+            for i in permutations([_h, _k, _i]):
+                h, k = i[0], i[1]
+                sel = [[p*h, p*k, m*l] for p in [1, -1] for m in [1, -1]]
+                for x in sel:
+                    ss = [p for p in permutations(x[:2])]
+                    for y in ss:
+                        hk = list(y)
+                        hk.extend([x[-1]])
+                        expod1.append(pd.concat(hk, axis=1))
+            _h = pod2[['h']]
+            _k = pod2[['k']]
+            _i = -h-k
+            l = pod2[['l']]
+            for i in permutations([_h, _k, _i]):
+                h, k = i[0], i[1]
+                sel = [[p*h, p*k, m*l] for p in [1, -1] for m in [1, -1]]
+                for x in sel:
+                    ss = [p for p in permutations(x[:2])]
+                    for y in ss:
+                        hk = list(y)
+                        hk.extend([x[-1]])
+                        expod2.append(pd.concat(hk, axis=1))
+            _h = pod3[['h']]
+            _k = pod3[['k']]
+            _i = -h-k
+            l = pod3[['l']]
+            for i in permutations([_h, _k, _i]):
+                h, k = i[0], i[1]
+                sel = [[p*h, p*k, m*l] for p in [1, -1] for m in [1, -1]]
+                for x in sel:
+                    ss = [p for p in permutations(x[:2])]
+                    for y in ss:
+                        hk = list(y)
+                        hk.extend([x[-1]])
+                        expod3.append(pd.concat(hk, axis=1))
+        # 四方晶系h、k指数位置可互换，符号可以任意改变，共16种可能变换
+        elif self.cryForm == 'Tetragonal':
+            h = pod1[['h']]
+            k = pod1[['k']]
+            l = pod1[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                ss = [p for p in permutations(x[:2])]
+                for y in ss:
+                    hk = list(y)
+                    hk.extend([x[-1]])
+                    expod1.append(pd.concat(hk, axis=1))
+            h = pod2[['h']]
+            k = pod2[['k']]
+            l = pod2[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                ss = [p for p in permutations(x[:2])]
+                for y in ss:
+                    hk = list(y)
+                    hk.extend([x[-1]])
+                    expod2.append(pd.concat(hk, axis=1))
+            h = pod3[['h']]
+            k = pod3[['k']]
+            l = pod3[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                ss = [p for p in permutations(x[:2])]
+                for y in ss:
+                    hk = list(y)
+                    hk.extend([x[-1]])
+                    expod3.append(pd.concat(hk, axis=1))
+        # 正交晶系指数符号可以独立变化，位置不能变， 共8种可能变换
+        elif self.cryForm == 'Orthorhombic':
+            h = pod1[['h']]
+            k = pod1[['k']]
+            l = pod1[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                expod1.append(pd.concat(x, axis=1))
+            h = pod2[['h']]
+            k = pod2[['k']]
+            l = pod2[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                expod2.append(pd.concat(x, axis=1))
+            h = pod3[['h']]
+            k = pod3[['k']]
+            l = pod3[['l']]
+            sel = [[p*h, q*k, m*l] for p in [1, -1] for q in [1,-1] for m in [1,-1]]
+            for x in sel:
+                expod3.append(pd.concat(x, axis=1))
+        # 三方（菱形）晶系各指数位置可变，符号必须一起变，共12 种可能变换
+        elif (self.cryForm == 'Trigonal')or(self.cryForm == 'Rhombohedral'):
+            h = pod1[['h']]
+            k = pod1[['k']]
+            l = pod1[['l']]
+            sel = [[p*h, p*k, p*l] for p in [1, -1]]
+            for x in sel:
+                ss = [p for p in permutations(x)]
+                for y in ss:
+                    expod1.append(pd.concat(y, axis=1))
+            h = pod2[['h']]
+            k = pod2[['k']]
+            l = pod2[['l']]
+            sel = [[p*h, p*k, p*l] for p in [1, -1]]
+            for x in sel:
+                ss = [p for p in permutations(x)]
+                for y in ss:
+                    expod2.append(pd.concat(y, axis=1))
+            h = pod3[['h']]
+            k = pod3[['k']]
+            l = pod3[['l']]
+            sel = [[p*h, p*k, p*l] for p in [1, -1]]
+            for x in sel:
+                ss = [p for p in permutations(x)]
+                for y in ss:
+                    expod3.append(pd.concat(y, axis=1))
+        # 单斜晶系指数的位置不能变，k的符号可以单独改变，共4种可能变换
+        elif self.cryForm == 'Monoclinic':
+            h = pod1[['h']]
+            k = pod1[['k']]
+            l = pod1[['l']]
+            sel = [[p*h, p*k, m*l] for p in [1, -1] for m in [1,-1]]
+            for x in sel:
+                expod1.append(pd.concat(x, axis=1))
+            h = pod2[['h']]
+            k = pod2[['k']]
+            l = pod2[['l']]
+            sel = [[p*h, p*k, m*l] for p in [1, -1] for m in [1,-1]]
+            for x in sel:
+                expod2.append(pd.concat(x, axis=1))
+            h = pod3[['h']]
+            k = pod3[['k']]
+            l = pod3[['l']]
+            sel = [[p*h, p*k, m*l] for p in [1, -1] for m in [1,-1]]
+            for x in sel:
+                expod3.append(pd.concat(x, axis=1))
+        # 三斜晶系指数的位置不能变，符号一起变，共2种可能变换
+        elif self.cryForm == 'Triclinic':
+            h = pod1[['h']]
+            k = pod1[['k']]
+            l = pod1[['l']]
+            sel = [[p*h, p*k, p*l] for p in [1, -1]]
+            for x in sel:
+                expod1.append(pd.concat(x, axis=1))
+            h = pod2[['h']]
+            k = pod2[['k']]
+            l = pod2[['l']]
+            sel = [[p*h, p*k, p*l] for p in [1, -1]]
+            for x in sel:
+                expod2.append(pd.concat(x, axis=1))
+            h = pod3[['h']]
+            k = pod3[['k']]
+            l = pod3[['l']]
+            sel = [[p*h, p*k, p*l] for p in [1, -1]]
+            for x in sel:
+                expod3.append(pd.concat(x, axis=1))
 
         # 筛选出满足矢量加法条件的晶面
         lis_extpod1, lis_extpod2, lis_extpod3 = [], [], []
