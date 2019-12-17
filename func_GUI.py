@@ -222,7 +222,7 @@ class App():
             initialvalue=0.3, minvalue=0.001, maxvalue=10)
     
     def angle_error_limit(self):
-        self.ael = simpledialog.askfloat("晶面距误差限", "输入晶面距误差限(degree):",
+        self.ael = simpledialog.askfloat("晶面夹角误差限", "输入晶面夹角误差限(degree):",
             initialvalue=5, minvalue=0.001, maxvalue=180)
 
     def set_phi12(self):
