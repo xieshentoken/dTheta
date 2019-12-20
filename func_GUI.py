@@ -18,7 +18,7 @@ class App():
         self.initWidgets()
 
         self.pdf_path = tuple()
-        self.el = 1
+        self.el = 0.3
         self.ael = 180
         self.phi12 = 0
         self.phi23 =0
@@ -180,7 +180,7 @@ class App():
     # 新建项目
     def new_project(self):
         self.pdf_path = tuple()
-        self.el = 1
+        self.el = 0.3
         self.ael = 180
         self.phi12 = 0
         self.phi23 =0
@@ -219,19 +219,19 @@ class App():
     def distance_error_limit(self):
         # 调用askfloat函数生成一个让用户输入浮点数的对话框
         self.el = simpledialog.askfloat("晶面距误差限", "输入晶面距误差限(Å):",
-            initialvalue=0.3, minvalue=0.001, maxvalue=10)
+            initialvalue=self.el, minvalue=0.001, maxvalue=10)
     
     def angle_error_limit(self):
         self.ael = simpledialog.askfloat("晶面夹角误差限", "输入晶面夹角误差限(degree):",
-            initialvalue=5, minvalue=0.001, maxvalue=180)
+            initialvalue=self.ael, minvalue=0.001, maxvalue=180)
 
     def set_phi12(self):
         self.phi12 = simpledialog.askfloat("<d1, d2>", "输入测得的d1与d2的夹角(degree):",
-            initialvalue=0)
+            initialvalue=self.phi12)
 
     def set_phi23(self):
         self.phi23 = simpledialog.askfloat("<d2, d3>", "输入测得的d2与d3的夹角(degree):",
-            initialvalue=0)
+            initialvalue=self.phi23)
 
     def start_work(self):
         if self.pdf_path:
