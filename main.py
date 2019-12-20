@@ -17,7 +17,7 @@ from func_X import Xyy
 
 def main():
     root = Tk()
-    root.title("A little App")
+    root.title("A Grain of Sand")
     App(root)
     root.mainloop()
 
