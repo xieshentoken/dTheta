@@ -46,9 +46,11 @@ class App():
             width=24,
             font=('StSong', 20, 'bold'),
             foreground='#8080c0').pack(side=LEFT, ipadx=5, ipady=5)#fill=BOTH, expand=YES)
-        ttk.Button(fm1, text='...',
+        openfile_s = ttk.Button(fm1, text='...',
             command=self.open_filenames # 绑定open_filenames方法
-            ).pack(side=LEFT, ipadx=1, ipady=5)
+            )
+        openfile_s.pack(side=LEFT, ipadx=1, ipady=5)
+            # 不知为何此处绑定双击事件报错："command takes 1 positional argument but 2 were given"
         #----------------------------------------------------------------------------------
         # 创建Labelframe容器
         lf = ttk.Labelframe(self.window, text='|d1> + |d3> = |d2>',
@@ -247,13 +249,16 @@ class App():
                         rsl = example.fit()
                         self.cal_rsl.append(rsl)
                         if rsl.empty:
-                            self.result.insert('end', 'No resolution in Card: {}'.format(example.title))
+                            self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
+                            self.result.insert('end', 'Possible Card:')
                             self.result.insert('end', rsl)
                     except UnboundLocalError:
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
+                    except ValueError:
+                        self.result.insert('end', 'No Crystal Distance in Card: {}'.format(example.title))
                 end = time.time()
-                self.result.insert('end', '计算结果用时：{} s'.format(end-start))
+                self.result.insert('end', '计算结果用时：{} s\n'.format(end-start))
             elif isinstance(self.pdf_path, tuple):
                 start = time.time()
                 for pdf_path in self.pdf_path:
@@ -265,13 +270,16 @@ class App():
                         rsl = example.fit()
                         self.cal_rsl.append(rsl)
                         if rsl.empty:
-                            self.result.insert('end', 'No resolution in Card: {}'.format(example.title))
+                            self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
+                            self.result.insert('end', 'Possible Card:')
                             self.result.insert('end', rsl)
                     except UnboundLocalError:
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
+                    except ValueError:
+                        self.result.insert('end', 'No Crystal Distance in Card: {}'.format(example.title))
                 end = time.time()
-                self.result.insert('end', '计算结果用时：{} s'.format(end-start))
+                self.result.insert('end', '计算结果用时：{} s\n'.format(end-start))
         else:
             messagebox.showinfo(title='警告',message='请选择有效文件！')
 
