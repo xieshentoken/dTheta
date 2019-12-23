@@ -144,6 +144,7 @@ class Xyy():
         # dA = self.data['d(A)']
         if (pod1.values.tolist()==[])or(pod2.values.tolist()==[])or(pod3.values.tolist()==[]):
             print('No solution in the card--{}'.format(self.title))
+            raise ValueError
         else:
             pass
 
@@ -182,7 +183,7 @@ class Xyy():
         elif self.cryForm == 'Hexagonal':
             _h = pod1[['h']]
             _k = pod1[['k']]
-            _i = -h-k
+            _i = -_h-_k
             l = pod1[['l']]
             for i in permutations([_h, _k, _i]):
                 h, k = i[0], i[1]
@@ -195,7 +196,7 @@ class Xyy():
                         expod1.append(pd.concat(hk, axis=1))
             _h = pod2[['h']]
             _k = pod2[['k']]
-            _i = -h-k
+            _i = -_h-_k
             l = pod2[['l']]
             for i in permutations([_h, _k, _i]):
                 h, k = i[0], i[1]
@@ -208,7 +209,7 @@ class Xyy():
                         expod2.append(pd.concat(hk, axis=1))
             _h = pod3[['h']]
             _k = pod3[['k']]
-            _i = -h-k
+            _i = -_h-_k
             l = pod3[['l']]
             for i in permutations([_h, _k, _i]):
                 h, k = i[0], i[1]
@@ -377,9 +378,8 @@ class Xyy():
                         if (abs(cal_phi12 - self.phi12) <= self.ael)and(abs(cal_phi23 - self.phi23) <= self.ael):
                             rs.append([p,q,m,cal_phi12,cal_phi23,cal_d1,cal_d2,cal_d3]) 
 
-
         if rs == []:
-            print('No resolution in Card: {}'.format(self.title))
+            print('No solution in Card-*-: {}'.format(self.title))
 
         else:
             psb_rslt = pd.DataFrame(rs, columns = ['posiible d1', 'posiible d2', 'posiible d3', 'cal_phi<d1,d2>', 'cal_phi<d2,d3>', 'cal_d1', 'cal_d2', 'cal_d3'])
