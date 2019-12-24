@@ -55,7 +55,7 @@ class Xyy():
             alpha = beta = gamma = 90.0
         elif self.cryForm == 'Tetragonal':
             a = b = float(cellPara0[0])
-            c = float(cellPara0[2])
+            c = float(cellPara0[1])
             alpha = beta = gamma = 90.0
         elif self.cryForm == 'Orthorhombic':
             a = float(cellPara0[0])
