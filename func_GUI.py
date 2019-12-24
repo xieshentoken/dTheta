@@ -251,7 +251,7 @@ class App():
                         if rsl.empty:
                             self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
-                            self.result.insert('end', 'Possible Card:')
+                            self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
                     except UnboundLocalError:
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
@@ -272,7 +272,7 @@ class App():
                         if rsl.empty:
                             self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
-                            self.result.insert('end', 'Possible Card:')
+                            self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
                     except UnboundLocalError:
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
