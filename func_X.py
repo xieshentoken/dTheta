@@ -67,7 +67,7 @@ class Xyy():
             b = float(cellPara0[1])
             c = float(cellPara0[2])
             alpha = 90.0
-            if len(cellPara0) == 4:
+            if (len(cellPara0) == 4)or(len(cellPara0) == 5):
                 beta = float(cellPara0[3])
             elif len(cellPara0) == 6:
                 beta = float(cellPara0[4])
