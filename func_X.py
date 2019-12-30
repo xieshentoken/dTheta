@@ -128,7 +128,7 @@ class Xyy():
                         i[i.index(j)] = j.split('(')[1]
 
         preData = pd.DataFrame(participle, columns = columns)
-        preData = preData.dropna()# 去除空值
+        preData = preData.dropna() # 去除空值
         self.data = preData.astype('float')
         dA = self.data['d(A)']
         h = self.data[['h']]
