@@ -107,7 +107,7 @@ class App():
     def init_menu(self):
         # '初始化菜单的方法'
         # 定义菜单条所包含的3个菜单
-        menus = ('文件', '编辑', '帮助')
+        menus = ('文件', '编辑', '程序', '帮助')
         # 定义菜单数据
         items = (OrderedDict([
                 # 每项对应一个菜单项，后面元组第一个元素是菜单图标，
@@ -132,6 +132,9 @@ class App():
                     ('选择颜色',(None, self.select_color))
                     ]))
                 ]),
+            OrderedDict([('计算晶面距',(None, self.insertapp)), 
+                ('理论密度', (None, None))
+                ]),
             OrderedDict([('帮助主题',(None, None)),
                 ('-1',(None, None)),
                 ('关于', (None, None))]))
@@ -149,7 +152,7 @@ class App():
             tm = items[i]
             # 遍历OrderedDict,默认只遍历它的key
             for label in tm:
-                print(label)
+                # print(label)
                 # 如果value又是OrderedDict，说明是二级菜单
                 if isinstance(tm[label], OrderedDict):
                     # 创建子菜单、并添加子菜单
@@ -245,12 +248,12 @@ class App():
                     try:
                         example.getPdfInfo()
                         self.data.append(example.data)
-                        self.title.append(example.title)
                         rsl = example.fit()
                         self.cal_rsl.append(rsl)
                         if rsl.empty:
                             self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
+                            self.title.append(example.title)
                             self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
                     except UnboundLocalError:
@@ -266,12 +269,12 @@ class App():
                     try:
                         example.getPdfInfo()
                         self.data.append(example.data)
-                        self.title.append(example.title)
                         rsl = example.fit()
                         self.cal_rsl.append(rsl)
                         if rsl.empty:
                             self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
+                            self.title.append(example.title)
                             self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
                     except UnboundLocalError:
@@ -314,3 +317,196 @@ class App():
             plt.show()
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
+
+    def insertapp(self):
+        Calcu_Special_Distance(self.window, self.pdf_path, self.rgb[1])
+
+    # 自定义对话框类，继承Toplevel------------------------------------------------------------------------------------------
+    # 创建弹窗
+class Calcu_Special_Distance(Toplevel):
+    # 定义构造方法
+    def __init__(self, parent, pdf_path, rgb='#8080c0', title = '计算给定晶面的晶面距', modal=False):
+        Toplevel.__init__(self, parent)
+        self.transient(parent)
+        # 设置标题
+        if title: self.title(title)
+        self.parent = parent
+        self.pdf_path = pdf_path
+        self.rgb = rgb
+        # 创建对话框的主体内容
+        frame = Frame(self)
+        # 调用init_widgets方法来初始化对话框界面
+        self.initial_focus = self.init_widgets(frame)
+        frame.pack(padx=5, pady=5)
+
+        # 根据modal选项设置是否为模式对话框
+        if modal: self.grab_set()
+        if not self.initial_focus:
+            self.initial_focus = self
+        # 为"WM_DELETE_WINDOW"协议使用self.cancel_click事件处理方法
+        self.protocol("WM_DELETE_WINDOW", self.cancel_click)
+        # 根据父窗口来设置对话框的位置
+        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
+            parent.winfo_rooty()+50))
+        print( self.initial_focus)
+        # 让对话框获取焦点
+        self.initial_focus.focus_set()
+        self.wait_window(self)
+
+    def init_var(self):
+        self.a, self.b, self.c = DoubleVar(), DoubleVar(), DoubleVar()
+        self.alpha, self.beta, self.gamma = DoubleVar(), DoubleVar(), DoubleVar()
+        self.h1, self.k1, self.l1 = DoubleVar(), DoubleVar(), DoubleVar()
+        self.h2, self.k2, self.l2 = DoubleVar(), DoubleVar(), DoubleVar()
+
+    # 通过该方法来创建自定义对话框的内容
+    def init_widgets(self, master):
+        self.init_var()
+        if isinstance(self.pdf_path, tuple)and(len(self.pdf_path) == 1):
+            example2 = Xyy(self.pdf_path[0])
+            try:
+                example2.getPdfInfo()
+                self.a.set(example2.cellPara[0][0])
+                self.b.set(example2.cellPara[0][1])
+                self.c.set(example2.cellPara[0][2])
+                self.alpha.set(example2.cellPara[1][0])
+                self.beta.set(example2.cellPara[1][1])
+                self.gamma.set(example2.cellPara[1][2])
+            except:
+                pass
+        else:
+            pass
+        
+        fm0 = Frame(master)
+        fm0.pack(side=TOP, fill=BOTH, expand=YES)
+        # 创建Labelframe容器
+        lf1 = ttk.Labelframe(fm0, text='晶格常数',
+            padding=10)
+        lf1.pack(side=LEFT, fill=BOTH, expand=NO, padx=10, pady=10)
+        # 创建2个容器, 输入或读取晶格常数==================================================================================
+        fm1 = Frame(lf1)
+        fm1.pack(side=TOP, fill=BOTH, expand=NO)
+        for lab, val in zip(['a:', 'b:', 'c:'], [self.a, self.b, self.c]):
+            Label(fm1, font=('StSong', 15, 'bold'), text=lab).pack(side=LEFT, padx=15, pady=10)
+            ttk.Entry(fm1, textvariable=val,
+                width=3,
+                font=('StSong', 15, 'bold'),
+                foreground=self.rgb).pack(side=LEFT, ipadx=5, ipady=5, padx=5, pady=10)
+
+        fm2 = Frame(lf1)
+        fm2.pack(side=TOP, fill=BOTH, expand=NO)
+        for lab, val in zip(['α:', 'β:', 'γ:'], [self.alpha, self.beta, self.gamma]):
+            Label(fm2, font=('StSong', 15, 'bold'), text=lab).pack(side=LEFT, padx=15, pady=10)
+            ttk.Entry(fm2, textvariable=val,
+                width=3,
+                font=('StSong', 15, 'bold'),
+                foreground=self.rgb).pack(side=LEFT, ipadx=5, ipady=5, padx=5, pady=10)
+        # 创建指定晶面的密勒指数输入框============================================================================================
+        lf2 = ttk.Labelframe(fm0, text='密勒指数',
+            padding=10)
+        lf2.pack(side=LEFT, fill=BOTH, expand=NO, padx=10, pady=10)
+        fm3 = Frame(lf2)
+        fm3.pack(side=TOP, fill=BOTH, expand=NO)
+        for lab, val in zip(['h1:', 'k1:', 'l1:'], [self.h1, self.k1, self.l1]):
+            Label(fm3, font=('StSong', 15, 'bold'), text=lab).pack(side=LEFT, padx=15, pady=10)
+            ttk.Entry(fm3, textvariable=val,
+                width=3,
+                font=('StSong', 15, 'bold'),
+                foreground=self.rgb).pack(side=LEFT, ipadx=5, ipady=5, padx=5, pady=10)
+        fm4 = Frame(lf2)
+        fm4.pack(side=TOP, fill=BOTH, expand=NO)
+        for lab, val in zip(['h2:', 'k2:', 'l2:'], [self.h2, self.k2, self.l2]):
+            Label(fm4, font=('StSong', 15, 'bold'), text=lab).pack(side=LEFT, padx=15, pady=10)
+            ttk.Entry(fm4, textvariable=val,
+                width=3,
+                font=('StSong', 15, 'bold'),
+                foreground=self.rgb).pack(side=LEFT, ipadx=5, ipady=5, padx=5, pady=10)
+        # 创建按钮================================================================================================================
+        # 创建第二个容器
+        fm00 = Frame(master)
+        fm00.pack(side=TOP, fill=BOTH, expand=YES)
+        # 创建第二个容器的子容器----------------------------
+        fm2_0 = Frame(fm00)
+        fm2_0.pack(side=LEFT, fill=BOTH, expand=YES)
+        self.result = Text(fm2_0, 
+            width=50,
+            height=10,
+            font=('StSong', 14),
+            foreground=self.rgb)
+        self.result.pack(side=LEFT, fill=BOTH, expand=YES)
+        # 创建Scrollbar组件，设置该组件与result的纵向滚动关联
+        scroll_y = Scrollbar(fm2_0, command=self.result.yview)
+        scroll_y.pack(side=RIGHT, fill=Y, expand=YES)
+        # 设置result的纵向滚动影响scroll滚动条
+        self.result.configure(yscrollcommand=scroll_y.set)
+        # 创建第二个容器的子容器----------------------------
+        fm2_1 = Frame(fm00)
+        fm2_1.pack(side=LEFT, fill=BOTH, expand=YES)
+        d_button = Button(fm2_1, text = 'd(h1k1l1)', 
+            bd=3, width = 10, height = 1, 
+            command = self.distance, 
+            activebackground='black', activeforeground='white')
+        d_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+        phi_button = Button(fm2_1, text = 'Angle', 
+            bd=3, width = 10, height = 1, 
+            command = self.p1_p2_angle, 
+            activebackground='black', activeforeground='white')
+        phi_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+        new_button = Button(fm2_1, text = 'Clear', 
+            bd=3, width = 10, height = 1, 
+            command = self.clear, 
+            activebackground='black', activeforeground='white')
+        new_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+
+    def clear(self):
+        self.result.delete(0.0, 'end')
+
+    def hihj(self, p1, p2):
+        abc = np.array([self.a.get(), self.b.get(), self.c.get()])
+        abg = np.array([self.alpha.get()*np.pi/180, self.beta.get()*np.pi/180, self.gamma.get()*np.pi/180])
+        return (p1*p2).dot((np.sin(abg)**2)/(abc**2)) + (p1[1]*p2[2]+p1[2]*p2[1])*(np.cos(abg[1])*np.cos(abg[2])-np.cos(abg[0]))/(abc[1]*abc[2]) + (p1[2]*p2[0]+p1[0]*p2[2])*(np.cos(abg[2])*np.cos(abg[0])-np.cos(abg[1]))/(abc[2]*abc[0]) + (p1[0]*p2[1]+p1[1]*p2[0])*(np.cos(abg[0])*np.cos(abg[1])-np.cos(abg[2]))/(abc[0]*abc[1])
+
+    def distance(self):
+        self.abc = np.array([self.a.get(), self.b.get(), self.c.get()])
+        self.abg = np.array([self.alpha.get()*np.pi/180, self.beta.get()*np.pi/180, self.gamma.get()*np.pi/180])
+        self.p1 = np.array([self.h1.get(), self.k1.get(), self.l1.get()])
+        try:
+            vol = (1 - np.cos(self.abg[0])**2 - np.cos(self.abg[1])**2 - np.cos(self.abg[2])**2 + 2*np.cos(self.abg[0])*np.cos(self.abg[1])*np.cos(self.abg[2]))**0.5
+            cal_distance = vol/(self.hihj(self.p1, self.p1))**0.5
+            self.result.insert('end', '晶面({},{},{})的晶面距为: {}\n'.format(self.h1.get(), self.k1.get(), self.l1.get(), str(cal_distance)))
+            self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
+                str(float(int(cal_distance*1000)/1000)), int(self.h1.get()), int(self.k1.get()), int(self.l1.get())))
+        except:
+            messagebox.showinfo(title='警告',message='请重新输入相关参数')
+        # vol = (1 - np.cos(self.abg[0])**2 - np.cos(self.abg[1])**2 - np.cos(self.abg[2])**2 + 2*np.cos(self.abg[0])*np.cos(self.abg[1])*np.cos(self.abg[2]))**0.5
+        # cal_distance = vol/(self.hihj(self.p1, self.p1))**0.5
+        # self.result.insert('end', '晶面({},{},{})的晶面距为: {}\n'.format(self.h1.get(), self.k1.get(), self.l1.get(), str(cal_distance)))
+        # self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
+        # self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
+        #     str(float(int(cal_distance*100)/100)), int(self.h1.get()), int(self.k1.get()), int(self.l1.get())))
+
+    def p1_p2_angle(self):
+        self.abc = np.array([self.a.get(), self.b.get(), self.c.get()])
+        self.abg = np.array([self.alpha.get()*np.pi/180, self.beta.get()*np.pi/180, self.gamma.get()*np.pi/180])
+        self.p1 = np.array([self.h1.get(), self.k1.get(), self.l1.get()])
+        self.p2 = np.array([self.h2.get(), self.k2.get(), self.l2.get()])
+        try:
+            h11 = self.hihj(self.p1, self.p1)
+            h22 = self.hihj(self.p2, self.p2)
+            h12 = self.hihj(self.p1, self.p2)
+            cal_phi12 = np.arccos(h12/(h11*h22)**0.5)*180./np.pi
+            self.result.insert('end', '晶面夹角为: {}°\n'.format(str(cal_phi12)))
+        except:
+            messagebox.showinfo(title='警告',message='请重新输入相关参数')
+        # h11 = self.hihj(self.p1, self.p1)
+        # h22 = self.hihj(self.p2, self.p2)
+        # h12 = self.hihj(self.p1, self.p2)
+        # cal_phi12 = np.arccos(h12/(h11*h22)**0.5)*180./np.pi
+        # self.result.insert('end', '晶面夹角为: {}\n'.format(str(cal_phi12)))
+
+    def cancel_click(self, event=None):
+        # print('取消')
+        # 将焦点返回给父窗口
+        self.parent.focus_set()
+        # 销毁自己
+        self.destroy()
