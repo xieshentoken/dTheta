@@ -18,14 +18,14 @@ class App():
         self.initWidgets()
 
         self.pdf_path = tuple()
-        self.el = 0.3
-        self.ael = 180
+        self.el = 0.1
+        self.ael = 5
         self.phi12 = 0
         self.phi23 =0
         self.data = []
         self.title = []
         self.cal_rsl = []  # 保存计算总结果的list，其元素为每张卡片的结果(格式为pandas.DataFrame)
-        self.rgb = ('#000000', 'black')
+        self.rgb = ('blue', '#454365')
         
     def initWidgets(self):
         # 初始化菜单、工具条用到的图标
@@ -94,7 +94,7 @@ class App():
         work_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
         export_button = Button(fm2_1, text = 'Export data', 
             bd=3, width = 10, height = 1, 
-            command = self.save_as_csv, 
+            command = self.save_as_excel, 
             activebackground='black', activeforeground='white')
         export_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
         new_button = Button(fm2_1, text = 'New project', 
@@ -133,11 +133,11 @@ class App():
                     ]))
                 ]),
             OrderedDict([('计算晶面距',(None, self.insertapp)), 
-                ('理论密度', (None, None))
+                
                 ]),
             OrderedDict([('帮助主题',(None, None)),
                 ('-1',(None, None)),
-                ('关于', (None, None))]))
+                ('关于', (None, self.about))]))
         # 使用Menu创建菜单条
         menubar = Menu(self.window)
         # 为窗口配置菜单条，也就是添加菜单条
@@ -177,16 +177,16 @@ class App():
                         command=tm[label][1], compound=LEFT)
     # 生成所有需要的图标
     def init_icons(self):
-        self.window.filenew_icon = PhotoImage(name='D:/pyfold/重构/app/images/filenew.png')
-        self.window.fileopen_icon = PhotoImage(name='D:/pyfold/重构/app/images/fileopen.png')
-        self.window.save_icon = PhotoImage(name='D:/pyfold/重构/app/images/save.png')
-        self.window.saveas_icon = PhotoImage(name='D:/pyfold/重构/app/images/saveas.png')
-        self.window.signout_icon = PhotoImage(name='D:/pyfold/重构/app/images/signout.png')
+        self.window.filenew_icon = PhotoImage(name='E:/pydoc/tkinter/images/filenew.png')
+        self.window.fileopen_icon = PhotoImage(name='E:/pydoc/tkinter/images/fileopen.png')
+        self.window.save_icon = PhotoImage(name='E:/pydoc/tkinter/images/save.png')
+        self.window.saveas_icon = PhotoImage(name='E:/pydoc/tkinter/images/saveas.png')
+        self.window.signout_icon = PhotoImage(name='E:/pydoc/tkinter/images/signout.png')
     # 新建项目
     def new_project(self):
         self.pdf_path = tuple()
-        self.el = 0.3
-        self.ael = 180
+        self.el = 0.1
+        self.ael = 5
         self.phi12 = 0
         self.phi23 =0
         self.data = []
@@ -211,13 +211,13 @@ class App():
         # pdf_path为一个tuple
         self.pdf_path = filedialog.askopenfilenames(title='打开多个文件',
             filetypes=[("文本文件", "*.txt"), ('Python源文件', '*.py')], # 只处理的文件类型
-            initialdir='d:/') # 初始目录
+            initialdir='C:/Users/Administrator/Desktop') # 初始目录
         self.pdf_adr.set(self.pdf_path)
 
     def open_dir(self):
             # 调用askdirectory方法打开目录
         self.pdf_path = filedialog.askdirectory(title='打开目录',
-            initialdir='d:/') # 初始目录
+            initialdir='C:/Users/Administrator/Desktop') # 初始目录
         self.pdf_adr.set(self.pdf_path)
         # print(type(self.pdf_path))
         
@@ -299,7 +299,13 @@ class App():
 
     def save_as_excel(self):
         if len(self.cal_rsl) > 0:
-            messagebox.showinfo(title='提醒',message='该功能未完善')
+            save_path = filedialog.asksaveasfilename(title='保存文件', 
+            filetypes=[("office Excel", "*.xls")], # 只处理的文件类型
+            initialdir='/Users/hsh/Desktop/')
+            with pd.ExcelWriter(save_path+'.xls') as writer:
+                for rsl, tit in zip(self.cal_rsl, self.title):
+                    if rsl.empty == False:
+                        rsl.to_excel(writer, sheet_name=tit[:11])
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
 
@@ -310,13 +316,15 @@ class App():
         self.result.insert('end', self.rgb)
 
     def plot_card(self):
-        if self.data[0].empty == False:
-            self.data[0].plot(kind = 'bar', x='2-Theta', y='I(f)',
-            yticks = range(0,150,20), rot=60, fontsize=10, 
-            label =self.title[0], color = self.rgb[1])
-            plt.show()
-        else:
-            messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
+        example = Xyy(self.pdf_path[0], self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23)
+        example.getPdfInfo()
+        example.data.plot(kind = 'bar', x='2-Theta', y='I(f)', width=0.05,
+            yticks=range(0,150,20), rot=60, fontsize=10, 
+            label=example.title, color=self.rgb[1])
+        plt.show()
+
+    def about(self):
+        messagebox.showinfo(title='关于',message='本项目地址：https://github.com/xieshentoken/dTheta\n欢迎提出建议共同完善。\n\t\t\t作者qq:3468502700')
 
     def insertapp(self):
         Calcu_Special_Distance(self.window, self.pdf_path, self.rgb[1])
@@ -338,7 +346,6 @@ class Calcu_Special_Distance(Toplevel):
         # 调用init_widgets方法来初始化对话框界面
         self.initial_focus = self.init_widgets(frame)
         frame.pack(padx=5, pady=5)
-
         # 根据modal选项设置是否为模式对话框
         if modal: self.grab_set()
         if not self.initial_focus:
@@ -473,17 +480,11 @@ class Calcu_Special_Distance(Toplevel):
         try:
             vol = (1 - np.cos(self.abg[0])**2 - np.cos(self.abg[1])**2 - np.cos(self.abg[2])**2 + 2*np.cos(self.abg[0])*np.cos(self.abg[1])*np.cos(self.abg[2]))**0.5
             cal_distance = vol/(self.hihj(self.p1, self.p1))**0.5
-            self.result.insert('end', '晶面({},{},{})的晶面距为: {}\n'.format(self.h1.get(), self.k1.get(), self.l1.get(), str(cal_distance)))
+            self.result.insert('end', '晶面({},{},{})的晶面距为: {} Å\n'.format(int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), str(cal_distance)))
             self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
                 str(float(int(cal_distance*1000)/1000)), int(self.h1.get()), int(self.k1.get()), int(self.l1.get())))
         except:
             messagebox.showinfo(title='警告',message='请重新输入相关参数')
-        # vol = (1 - np.cos(self.abg[0])**2 - np.cos(self.abg[1])**2 - np.cos(self.abg[2])**2 + 2*np.cos(self.abg[0])*np.cos(self.abg[1])*np.cos(self.abg[2]))**0.5
-        # cal_distance = vol/(self.hihj(self.p1, self.p1))**0.5
-        # self.result.insert('end', '晶面({},{},{})的晶面距为: {}\n'.format(self.h1.get(), self.k1.get(), self.l1.get(), str(cal_distance)))
-        # self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
-        # self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
-        #     str(float(int(cal_distance*100)/100)), int(self.h1.get()), int(self.k1.get()), int(self.l1.get())))
 
     def p1_p2_angle(self):
         self.abc = np.array([self.a.get(), self.b.get(), self.c.get()])
@@ -498,11 +499,6 @@ class Calcu_Special_Distance(Toplevel):
             self.result.insert('end', '晶面夹角为: {}°\n'.format(str(cal_phi12)))
         except:
             messagebox.showinfo(title='警告',message='请重新输入相关参数')
-        # h11 = self.hihj(self.p1, self.p1)
-        # h22 = self.hihj(self.p2, self.p2)
-        # h12 = self.hihj(self.p1, self.p2)
-        # cal_phi12 = np.arccos(h12/(h11*h22)**0.5)*180./np.pi
-        # self.result.insert('end', '晶面夹角为: {}\n'.format(str(cal_phi12)))
 
     def cancel_click(self, event=None):
         # print('取消')
