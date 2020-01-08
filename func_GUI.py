@@ -249,10 +249,10 @@ class App():
                         example.getPdfInfo()
                         self.data.append(example.data)
                         rsl = example.fit()
-                        self.cal_rsl.append(rsl)
                         if rsl.empty:
                             self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
+                            self.cal_rsl.append(rsl)
                             self.title.append(example.title)
                             self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
@@ -270,10 +270,10 @@ class App():
                         example.getPdfInfo()
                         self.data.append(example.data)
                         rsl = example.fit()
-                        self.cal_rsl.append(rsl)
                         if rsl.empty:
                             self.result.insert('end', 'No Solution in Card: {}'.format(example.title))
                         elif rsl.empty == False:
+                            self.cal_rsl.append(rsl)
                             self.title.append(example.title)
                             self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
@@ -304,8 +304,7 @@ class App():
             initialdir='/Users/hsh/Desktop/')
             with pd.ExcelWriter(save_path+'.xls') as writer:
                 for rsl, tit in zip(self.cal_rsl, self.title):
-                    if rsl.empty == False:
-                        rsl.to_excel(writer, sheet_name=tit[:11])
+                    rsl.to_excel(writer, sheet_name=tit[:11])
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
 
