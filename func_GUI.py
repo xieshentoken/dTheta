@@ -21,7 +21,8 @@ class App():
         self.el = 0.1
         self.ael = 5
         self.phi12 = 0
-        self.phi23 =0
+        self.phi23 = 0
+        self.order_n = 1
         self.data = []
         self.title = []
         self.cal_rsl = []  # 保存计算总结果的list，其元素为每张卡片的结果(格式为pandas.DataFrame)
@@ -117,6 +118,8 @@ class App():
                 ('打开文件夹', (None, self.open_dir)),
                 ('另存为', OrderedDict([('CSV',(None, self.save_as_csv)),
                         ('Excel',(None, self.save_as_excel))])),
+                ('载入测试参数', (None, self.load_para)),
+                ('保存测试参数', (None, self.save_para)),
                 ('-1', (None, None)),
                 ('退出', (None, self.window.quit)),
                 ]),
@@ -127,6 +130,7 @@ class App():
                 ('角度误差限',(None, self.angle_error_limit)),
                 ('-2',(None, None)),
                 # 二级菜单
+                ('衍射级数n',(None, self.set_n)),
                 ('更多', OrderedDict([
                     ('显示图谱',(None, self.plot_card)),
                     ('选择颜色',(None, self.select_color))
@@ -135,7 +139,7 @@ class App():
             OrderedDict([('计算晶面距',(None, self.insertapp)), 
                 
                 ]),
-            OrderedDict([('帮助主题',(None, None)),
+            OrderedDict([('帮助主题',(None, self.help)),
                 ('-1',(None, None)),
                 ('关于', (None, self.about))]))
         # 使用Menu创建菜单条
@@ -177,18 +181,20 @@ class App():
                         command=tm[label][1], compound=LEFT)
     # 生成所有需要的图标
     def init_icons(self):
-        self.window.filenew_icon = PhotoImage(name='E:/pydoc/tkinter/images/filenew.png')
-        self.window.fileopen_icon = PhotoImage(name='E:/pydoc/tkinter/images/fileopen.png')
-        self.window.save_icon = PhotoImage(name='E:/pydoc/tkinter/images/save.png')
-        self.window.saveas_icon = PhotoImage(name='E:/pydoc/tkinter/images/saveas.png')
-        self.window.signout_icon = PhotoImage(name='E:/pydoc/tkinter/images/signout.png')
+        # self.window.filenew_icon = PhotoImage(name='E:/pydoc/tkinter/images/filenew.png')
+        # self.window.fileopen_icon = PhotoImage(name='E:/pydoc/tkinter/images/fileopen.png')
+        # self.window.save_icon = PhotoImage(name='E:/pydoc/tkinter/images/save.png')
+        # self.window.saveas_icon = PhotoImage(name='E:/pydoc/tkinter/images/saveas.png')
+        # self.window.signout_icon = PhotoImage(name='E:/pydoc/tkinter/images/signout.png')
+        pass
     # 新建项目
     def new_project(self):
         self.pdf_path = tuple()
         self.el = 0.1
         self.ael = 5
         self.phi12 = 0
-        self.phi23 =0
+        self.phi23 = 0
+        self.order_n = 1
         self.data = []
         self.title = []
         self.cal_rsl = []
@@ -238,13 +244,17 @@ class App():
         self.phi23 = simpledialog.askfloat("<d2, d3>", "输入测得的d2与d3的夹角(degree):",
             initialvalue=self.phi23)
 
+    def set_n(self):
+        self.order_n = simpledialog.askinteger("衍射级数", "输入点阵的衍射级数n:",
+            initialvalue=self.order_n)
+
     def start_work(self):
         if self.pdf_path:
             if isinstance(self.pdf_path, str):
                 os.chdir(self.pdf_path)
                 start = time.time()
                 for pdf_path in os.listdir():
-                    example = Xyy(pdf_path, self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23)
+                    example = Xyy(pdf_path, self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23, self.order_n)
                     try:
                         example.getPdfInfo()
                         self.data.append(example.data)
@@ -265,7 +275,7 @@ class App():
             elif isinstance(self.pdf_path, tuple):
                 start = time.time()
                 for pdf_path in self.pdf_path:
-                    example = Xyy(pdf_path, self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23)
+                    example = Xyy(pdf_path, self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23, self.order_n)
                     try:
                         example.getPdfInfo()
                         self.data.append(example.data)
@@ -321,6 +331,41 @@ class App():
             yticks=range(0,150,20), rot=60, fontsize=10, 
             label=example.title, color=self.rgb[1])
         plt.show()
+
+    def load_para(self):
+        self.unloadpara_path = filedialog.askopenfilename(title='打开单个文件',
+            filetypes=[("文本文件", "*.txt")], 
+            initialdir='C:/Users/Administrator/Desktop')
+        with open(self.unloadpara_path) as measurement:
+                unloadpara=[float(y) for y in measurement.readline().split(',')]
+        if len(unloadpara) == 5:
+            self.d1.set(unloadpara[0])
+            self.d2.set(unloadpara[1])
+            self.d3.set(unloadpara[2])
+            self.phi12 = unloadpara[3]
+            self.phi23 = unloadpara[4]
+        elif len(unloadpara) == 8:
+            self.d1.set(unloadpara[0])
+            self.d2.set(unloadpara[1])
+            self.d3.set(unloadpara[2])
+            self.phi12 = unloadpara[3]
+            self.phi23 = unloadpara[4]
+            self.el = unloadpara[5]
+            self.ael = unloadpara[6]
+            self.order_n = int(unloadpara[7])
+        else:
+            messagebox.showinfo(title='提示',message='所选文件不符合格式，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)')
+
+    def save_para(self):
+        self.parasaving_path = filedialog.asksaveasfilename(title='打开单个文件',
+            filetypes=[("文本文件", "*.txt")], 
+            initialdir='C:/Users/Administrator/Desktop')
+        with open(self.parasaving_path,'a') as f:
+            f.write(str(self.d1.get())+','+str(self.d2.get())+','+str(self.d3.get())+','+
+            str(self.phi12)+','+str(self.phi23)+','+str(self.el)+','+str(self.ael)+','+str(self.order_n))
+
+    def help(self):
+        messagebox.showinfo(title='说明',message='主界面选择一个或多个个PDF卡片(txt格式)；文件下拉菜单中“打开文件夹”也可同时查找多个PDF卡片文件，注意此文件夹内只能包含txt格式的PDF卡片。\nPDF卡片需包含卡片号、物质名、晶体类型、晶格常数及晶面距晶面指数等信息。\n"No solution in the card"代表存在晶面距但夹角偏差大于角度误差限')
 
     def about(self):
         messagebox.showinfo(title='关于',message='本项目地址：https://github.com/xieshentoken/dTheta\n欢迎提出建议共同完善。\n\t\t\t作者qq:3468502700')
@@ -495,7 +540,7 @@ class Calcu_Special_Distance(Toplevel):
             h22 = self.hihj(self.p2, self.p2)
             h12 = self.hihj(self.p1, self.p2)
             cal_phi12 = np.arccos(h12/(h11*h22)**0.5)*180./np.pi
-            self.result.insert('end', '晶面夹角为: {}°\n'.format(str(cal_phi12)))
+            self.result.insert('end', '({},{},{})({},{},{})的晶面夹角为: {}°\n'.format(int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), int(self.h2.get()), int(self.k2.get()), int(self.l2.get()), str(cal_phi12)))
         except:
             messagebox.showinfo(title='警告',message='请重新输入相关参数')
 
