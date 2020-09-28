@@ -7,6 +7,10 @@ from itertools import permutations
 from tkinter import *
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
+# Mac下使用这两行，Win下可以注释掉————————————————————
+import matplotlib
+matplotlib.use("TkAgg")
+#——————————————————————————————————
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
