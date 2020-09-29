@@ -57,6 +57,8 @@ class Xyy():
         elif self.cryForm == 'Tetragonal':
             a = b = float(cellPara0[0])
             c = float(cellPara0[1])
+            if b == c:
+                raise Exception('晶格常数识别错误，您可以在PDF卡片中修改格式以匹配读取模式。')
             alpha = beta = gamma = 90.0
         elif self.cryForm == 'Orthorhombic':
             a = float(cellPara0[0])
@@ -72,6 +74,8 @@ class Xyy():
                 beta = float(cellPara0[3])
             elif len(cellPara0) == 6:
                 beta = float(cellPara0[4])
+            if beta == 90.0:
+                raise Exception('晶格常数识别错误，您可以在PDF卡片中修改格式以匹配读取模式。')
             gamma = 90.0
         elif self.cryForm == 'Triclinic':
             a = float(cellPara0[0])
@@ -83,6 +87,8 @@ class Xyy():
         elif self.cryForm == 'Hexagonal':
             a = b = float(cellPara0[0])
             c = float(cellPara0[1])
+            if b == c:
+                raise Exception('晶格常数识别错误，您可以在PDF卡片中修改格式以匹配读取模式。')
             alpha = 90.0
             beta = 90.0
             gamma = 120.0
@@ -90,6 +96,8 @@ class Xyy():
             a = float(cellPara0[0])
             b = float(cellPara0[0])
             c = float(cellPara0[1])
+            if (a == b)and(b == c):
+                raise Exception('晶格常数识别错误，您可以在PDF卡片中修改格式以匹配读取模式。')
             alpha = 90.0
             beta = 90.0
             gamma = 120.0
