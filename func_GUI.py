@@ -270,6 +270,8 @@ class App():
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
                     except ValueError:
                         self.result.insert('end', 'No Crystal Distance in Card: {}'.format(example.title))
+                    except Exception:
+                        self.result.insert('end', '晶格常数识别错误\n您可以在PDF卡片{}中手动修改格式以匹配读取模式。'.format(example.title))
                 end = time.time()
                 self.result.insert('end', '计算结果用时：{} s\n'.format(end-start))
             elif isinstance(self.pdf_path, tuple):
@@ -291,6 +293,8 @@ class App():
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
                     except ValueError:
                         self.result.insert('end', 'No Crystal Distance in Card: {}'.format(example.title))
+                    except Exception:
+                        self.result.insert('end', '晶格常数识别错误\n您可以在PDF卡片{}中手动修改格式以匹配读取模式。'.format(example.title))
                 end = time.time()
                 self.result.insert('end', '计算结果用时：{} s\n'.format(end-start))
         else:
