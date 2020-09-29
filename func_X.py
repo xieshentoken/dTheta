@@ -184,7 +184,8 @@ class Xyy():
         elif self.cryForm == 'Hexagonal':
             _h = pod1[['h']]
             _k = pod1[['k']]
-            _i = -_h-_k
+            # _i = -_h-_k
+            _i = -pod1['h']-pod1['k']
             l = pod1[['l']]
             for i in permutations([_h, _k, _i]):
                 h, k = i[0], i[1]
@@ -197,7 +198,8 @@ class Xyy():
                         expod1.append(pd.concat(hk, axis=1))
             _h = pod2[['h']]
             _k = pod2[['k']]
-            _i = -_h-_k
+            # _i = -_h-_k
+            _i = -pod2['h']-pod2['k']
             l = pod2[['l']]
             for i in permutations([_h, _k, _i]):
                 h, k = i[0], i[1]
@@ -210,7 +212,8 @@ class Xyy():
                         expod2.append(pd.concat(hk, axis=1))
             _h = pod3[['h']]
             _k = pod3[['k']]
-            _i = -_h-_k
+            # _i = -_h-_k
+            _i = -pod3['h']-pod3['k']
             l = pod3[['l']]
             for i in permutations([_h, _k, _i]):
                 h, k = i[0], i[1]
@@ -360,6 +363,7 @@ class Xyy():
             if m not in lis_expod3:
                 lis_expod3.append(m)
         
+        # print('lis expod1=',lis_expod1,'\n', 'lis_expod2=',lis_expod2,'\n','lis_expod3=',lis_expod3)
         rs=[]
         psb_rslt = pd.DataFrame()
         for q in lis_expod2:
