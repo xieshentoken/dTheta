@@ -181,7 +181,7 @@ class App():
                         command=tm[label][1], compound=LEFT)
     # 生成所有需要的图标
     def init_icons(self):
-        # self.window.filenew_icon = PhotoImage(name='E:/pydoc/tkinter/images/filenew.png')
+        # self.window.filenew_icon = PhotoImage(file=r"E:\pydoc\gittview\image\filenew.png")
         # self.window.fileopen_icon = PhotoImage(name='E:/pydoc/tkinter/images/fileopen.png')
         # self.window.save_icon = PhotoImage(name='E:/pydoc/tkinter/images/save.png')
         # self.window.saveas_icon = PhotoImage(name='E:/pydoc/tkinter/images/saveas.png')
@@ -340,25 +340,30 @@ class App():
         self.unloadpara_path = filedialog.askopenfilename(title='打开单个文件',
             filetypes=[("文本文件", "*.txt")], 
             initialdir='C:/Users/Administrator/Desktop')
-        with open(self.unloadpara_path) as measurement:
-                unloadpara=[float(y) for y in measurement.readline().split(',')]
-        if len(unloadpara) == 5:
-            self.d1.set(unloadpara[0])
-            self.d2.set(unloadpara[1])
-            self.d3.set(unloadpara[2])
-            self.phi12 = unloadpara[3]
-            self.phi23 = unloadpara[4]
-        elif len(unloadpara) == 8:
-            self.d1.set(unloadpara[0])
-            self.d2.set(unloadpara[1])
-            self.d3.set(unloadpara[2])
-            self.phi12 = unloadpara[3]
-            self.phi23 = unloadpara[4]
-            self.el = unloadpara[5]
-            self.ael = unloadpara[6]
-            self.order_n = int(unloadpara[7])
-        else:
-            messagebox.showinfo(title='提示',message='所选文件不符合格式，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)')
+        try:
+            with open(self.unloadpara_path) as measurement:
+                    unloadpara=[float(y) for y in measurement.readline().split(',')]
+            if len(unloadpara) == 5:
+                self.d1.set(unloadpara[0])
+                self.d2.set(unloadpara[1])
+                self.d3.set(unloadpara[2])
+                self.phi12 = unloadpara[3]
+                self.phi23 = unloadpara[4]
+            elif len(unloadpara) == 8:
+                self.d1.set(unloadpara[0])
+                self.d2.set(unloadpara[1])
+                self.d3.set(unloadpara[2])
+                self.phi12 = unloadpara[3]
+                self.phi23 = unloadpara[4]
+                self.el = unloadpara[5]
+                self.ael = unloadpara[6]
+                self.order_n = int(unloadpara[7])
+            else:
+                messagebox.showinfo(title='提示',message=
+                '所选文件不符合格式，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数需全部输入或都不输入')
+        except:
+            messagebox.showinfo(title='提示',message=
+            '所选文件不符合格式，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数可选')
 
     def save_para(self):
         self.parasaving_path = filedialog.asksaveasfilename(title='打开单个文件',
