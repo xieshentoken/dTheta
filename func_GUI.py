@@ -306,8 +306,10 @@ class App():
             filetypes=[("逗号分隔符文件", "*.csv")], # 只处理的文件类型
             initialdir='d:/')
             for rsl, tit in zip(self.cal_rsl, self.title):
+                card_tit = tit[:-2].replace(':','')
                 if rsl.empty == False:
-                    rsl.to_csv(save_path+tit[:11]+'.csv')
+                    rsl.to_csv(save_path+card_tit+'.csv')
+                    # rsl.to_csv(save_path+tit[:11]+'.csv')
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
 
@@ -318,7 +320,9 @@ class App():
             initialdir='/Users/hsh/Desktop/')
             with pd.ExcelWriter(save_path+'.xls') as writer:
                 for rsl, tit in zip(self.cal_rsl, self.title):
-                    rsl.to_excel(writer, sheet_name=tit[:11])
+                    card_tit = tit[:-2].replace(':','')
+                    rsl.to_excel(writer, sheet_name=card_tit)
+                    # rsl.to_excel(writer, sheet_name=tit[:11])
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
 
