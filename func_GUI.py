@@ -139,7 +139,8 @@ class App():
             OrderedDict([('计算晶面距',(None, self.insertapp)), 
                 
                 ]),
-            OrderedDict([('帮助主题',(None, self.help)),
+            OrderedDict([('帮助主题',(None, self.help)), 
+                ('提示',(None, self.tips)),
                 ('-1',(None, None)),
                 ('关于', (None, self.about))]))
         # 使用Menu创建菜单条
@@ -249,6 +250,15 @@ class App():
             initialvalue=self.order_n)
 
     def start_work(self):
+        # 输入晶面距时可以以“23+晶面距倒数(单位：埃分之一)”形式输入---------------
+        for d in [self.d1, self.d2, self.d3]:
+            if d.get() > 23.:
+                d.set(float(int(1000/(d.get()-23.)))/1000)
+            elif d.get() == 23.:
+                d.set(0.)
+            else:
+                pass
+        #---------------------------------------------------------------------
         if self.pdf_path:
             if isinstance(self.pdf_path, str):
                 os.chdir(self.pdf_path)
@@ -364,21 +374,29 @@ class App():
                 self.order_n = int(unloadpara[7])
             else:
                 messagebox.showinfo(title='提示',message=
-                '所选文件不符合格式，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数需全部输入或都不输入')
+                '所选文件不符合格式!新建一个txt，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数需全部输入或都不输入')
         except:
             messagebox.showinfo(title='提示',message=
-            '所选文件不符合格式，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数可选')
+            '所选文件不符合格式!新建一个txt，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数可选')
 
     def save_para(self):
         self.parasaving_path = filedialog.asksaveasfilename(title='打开单个文件',
             filetypes=[("文本文件", "*.txt")], 
             initialdir='C:/Users/Administrator/Desktop')
-        with open(self.parasaving_path,'a') as f:
+        with open(self.parasaving_path+'.txt','a') as f:
             f.write(str(self.d1.get())+','+str(self.d2.get())+','+str(self.d3.get())+','+
             str(self.phi12)+','+str(self.phi23)+','+str(self.el)+','+str(self.ael)+','+str(self.order_n))
 
     def help(self):
-        messagebox.showinfo(title='说明',message='主界面选择一个或多个个PDF卡片(txt格式)；文件下拉菜单中“打开文件夹”也可同时查找多个PDF卡片文件，注意此文件夹内只能包含txt格式的PDF卡片。\nPDF卡片需包含卡片号、物质名、晶体类型、晶格常数及晶面距晶面指数等信息。\n"No solution in the card"代表存在晶面距但夹角偏差大于角度误差限')
+        messagebox.showinfo(title='说明',message='主界面选择一个或多个个PDF卡片(txt格式)；文件下拉菜单中“打开文件夹”也可同时查找多个PDF卡片文件，注意此文件夹内只能包含txt格式的PDF卡片。\n'+
+        'PDF卡片需包含卡片号、物质名、晶体类型、晶格常数及晶面距晶面指数等信息。\n'+
+        '"No solution in the card"代表该卡片存在晶面距但夹角偏差大于角度误差限\n'+
+        '"Invalid Card"代表该卡片缺失必要信息\n'+
+        '"No Crystal Distance in Card"代表该卡片中没有误差范围内的晶面距')
+
+    def tips(self):
+        messagebox.showinfo(title='关于',message='输入晶面距时可以以“23+晶面距倒数(单位：埃分之一)”形式输入\n'+
+        '例如：\n\t测得倒易空间中晶面距为0.238 埃分之一，则在输入晶面距时，输入23.238和输入4.202是等价的')
 
     def about(self):
         messagebox.showinfo(title='关于',message='本项目地址：https://github.com/xieshentoken/dTheta\n欢迎提出建议共同完善。\n\t\t\t作者qq:3468502700')
@@ -534,12 +552,22 @@ class Calcu_Special_Distance(Toplevel):
         self.abc = np.array([self.a.get(), self.b.get(), self.c.get()])
         self.abg = np.array([self.alpha.get()*np.pi/180, self.beta.get()*np.pi/180, self.gamma.get()*np.pi/180])
         self.p1 = np.array([self.h1.get(), self.k1.get(), self.l1.get()])
+        # 输出第一行输入的晶面间距，以及对应铜靶X射线(λ=1.5418 Å)下的"d(A)     I(f)   I(v)  h  k  l  n^2  2-Theta   Theta  1/(2d)   2pi/d "，默认为一级衍射
         try:
             vol = (1 - np.cos(self.abg[0])**2 - np.cos(self.abg[1])**2 - np.cos(self.abg[2])**2 + 2*np.cos(self.abg[0])*np.cos(self.abg[1])*np.cos(self.abg[2]))**0.5
             cal_distance = vol/(self.hihj(self.p1, self.p1))**0.5
-            self.result.insert('end', '晶面({},{},{})的晶面距为: {} Å\n'.format(int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), str(cal_distance)))
-            self.result.insert('end', ' {}   40.0   23.0  {}  {}   {}        26.586  13.293  0.1493  1.8756\n'.format(
-                str(float(int(cal_distance*1000)/1000)), int(self.h1.get()), int(self.k1.get()), int(self.l1.get())))
+            self.result.insert('end', '晶面({},{},{})的晶面距为: {} Å\n'.format(int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), str(int(10000*cal_distance)/10000.)))
+            self.result.insert('end', ' {}   0.238   0.238  {}  {}   {}    {}   {}  {}  {}  {}\n'.format(
+                str(int(cal_distance*1000)/1000.), int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), 
+                (int(self.h1.get()))**2+(int(self.k1.get()))**2+(int(self.l1.get()))**2, 
+                str(int(np.arcsin(1.5418/2/cal_distance)*1000)/500.), str(int(np.arcsin(1.5418/2/cal_distance)*1000)/1000.), 
+                str(int(5000/cal_distance)/10000.), str(int(20000*np.pi/cal_distance)/10000.)
+                ))
+        except ValueError:
+            self.result.insert('end', ' {}   18.3   14.8  {}  {}  {}    {}   27.180  13.590  0.1525  1.9167\n'.format(
+                str(int(cal_distance*1000)/1000.), int(self.h1.get()), int(self.k1.get()), int(self.l1.get()),
+                (int(self.h1.get()))**2+(int(self.k1.get()))**2+(int(self.l1.get()))**2
+            ))
         except:
             messagebox.showinfo(title='警告',message='请重新输入相关参数')
 
@@ -553,7 +581,7 @@ class Calcu_Special_Distance(Toplevel):
             h22 = self.hihj(self.p2, self.p2)
             h12 = self.hihj(self.p1, self.p2)
             cal_phi12 = np.arccos(h12/(h11*h22)**0.5)*180./np.pi
-            self.result.insert('end', '({},{},{})({},{},{})的晶面夹角为: {}°\n'.format(int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), int(self.h2.get()), int(self.k2.get()), int(self.l2.get()), str(cal_phi12)))
+            self.result.insert('end', '({},{},{})({},{},{})的晶面夹角为: {}°\n'.format(int(self.h1.get()), int(self.k1.get()), int(self.l1.get()), int(self.h2.get()), int(self.k2.get()), int(self.l2.get()), str(int(1000*cal_phi12)/1000.)))
         except:
             messagebox.showinfo(title='警告',message='请重新输入相关参数')
 
