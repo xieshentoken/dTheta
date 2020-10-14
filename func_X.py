@@ -85,9 +85,14 @@ class Xyy():
             beta = float(cellPara0[4])
             gamma = float(cellPara0[5])
         elif self.cryForm == 'Hexagonal':
-            a = b = float(cellPara0[0])
-            c = float(cellPara0[1])
-            if b == c:
+            try:
+                if (cellPara0[0] == cellPara0[1])and(float(cellPara0[2]) != 90.0):
+                    a = b = float(cellPara0[0])
+                    c = float(cellPara0[2])
+                elif (cellPara0[0] != cellPara0[1])and(float(cellPara0[2]) == 90.0):
+                    a = b = float(cellPara0[0])
+                    c = float(cellPara0[1])
+            except:
                 raise Exception('晶格常数识别错误，您可以在PDF卡片中修改格式以匹配读取模式。')
             alpha = 90.0
             beta = 90.0
