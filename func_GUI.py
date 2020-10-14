@@ -251,13 +251,16 @@ class App():
 
     def start_work(self):
         # 输入晶面距时可以以“23+晶面距倒数(单位：埃分之一)”形式输入---------------
-        for d in [self.d1, self.d2, self.d3]:
-            if d.get() > 23.:
-                d.set(float(int(1000/(d.get()-23.)))/1000)
-            elif d.get() == 23.:
-                d.set(0.)
-            else:
-                pass
+        try:
+            for d in [self.d1, self.d2, self.d3]:
+                if d.get() > 23.:
+                    d.set(float(int(1000/(d.get()-23.)))/1000)
+                elif d.get() == 23.:
+                    d.set(0.)
+                else:
+                    pass
+        except:
+            messagebox.showinfo(title='警告',message='请按有效格式输入参数！')
         #---------------------------------------------------------------------
         if self.pdf_path:
             if isinstance(self.pdf_path, str):
@@ -276,12 +279,13 @@ class App():
                             self.title.append(example.title)
                             self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
+                            self.result.insert('end', '\n')
                     except UnboundLocalError:
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
                     except ValueError:
                         self.result.insert('end', 'No Crystal Distance in Card: {}'.format(example.title))
                     except Exception:
-                        self.result.insert('end', '晶格常数识别错误\n您可以在PDF卡片{}中手动修改格式以匹配读取模式。'.format(example.title))
+                        self.result.insert('end', '晶格常数识别错误\n您可以在PDF卡片{}中手动修改格式以匹配读取模式。\n'.format(example.title))
                 end = time.time()
                 self.result.insert('end', '计算结果用时：{} s\n'.format(end-start))
             elif isinstance(self.pdf_path, tuple):
@@ -299,12 +303,13 @@ class App():
                             self.title.append(example.title)
                             self.result.insert('end', 'Possible Card: {}'.format(example.title))
                             self.result.insert('end', rsl)
+                            self.result.insert('end', '\n')
                     except UnboundLocalError:
                         self.result.insert('end', 'Invalid Card: {}'.format(example.title))
                     except ValueError:
                         self.result.insert('end', 'No Crystal Distance in Card: {}'.format(example.title))
                     except Exception:
-                        self.result.insert('end', '晶格常数识别错误\n您可以在PDF卡片{}中手动修改格式以匹配读取模式。'.format(example.title))
+                        self.result.insert('end', '晶格常数识别错误\n您可以在PDF卡片{}中手动修改格式以匹配读取模式。\n'.format(example.title))
                 end = time.time()
                 self.result.insert('end', '计算结果用时：{} s\n'.format(end-start))
         else:
@@ -345,9 +350,12 @@ class App():
     def plot_card(self):
         example = Xyy(self.pdf_path[0], self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23)
         example.getPdfInfo()
-        example.data.plot(kind = 'bar', x='2-Theta', y='I(f)', width=0.05,
-            yticks=range(0,150,20), rot=60, fontsize=10, 
+        ax = example.data.plot(kind = 'bar', x='2-Theta', y='I(f)', width=0.05, 
+            yticks=range(0,150,20), xticks=range(0,90,10),rot=60, fontsize=10, 
             label=example.title, color=self.rgb[1])
+        ax.set_xlabel('2Theta (degree)')
+        ax.set_ylabel('Intensity(a.u.)')
+        # ax.set_xticks([i for i in range(5,95,10)])
         plt.show()
 
     def load_para(self):
@@ -384,6 +392,7 @@ class App():
             filetypes=[("文本文件", "*.txt")], 
             initialdir='C:/Users/Administrator/Desktop')
         with open(self.parasaving_path+'.txt','a') as f:
+        # with open(self.parasaving_path,'a') as f:   # MacOS环境下用这一行，注释掉上一行
             f.write(str(self.d1.get())+','+str(self.d2.get())+','+str(self.d3.get())+','+
             str(self.phi12)+','+str(self.phi23)+','+str(self.el)+','+str(self.ael)+','+str(self.order_n))
 
