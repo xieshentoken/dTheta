@@ -47,12 +47,12 @@ class App():
             width=24,
             font=('StSong', 20, 'bold'),
             foreground='#8080c0').pack(side=LEFT, ipadx=5, ipady=5)#fill=BOTH, expand=YES)
-        openfile_s = ttk.Button(fm1, text='...', width = 13
-            # command=self.open_filenames # 绑定open_filenames方法
+        openfile_s = ttk.Button(fm1, text='...', width = 13,
+            command=self.open_filenames # 绑定open_filenames方法
             )
         openfile_s.pack(side=LEFT, ipadx=1, ipady=5)
-        # 绑定事件，左键单击：打开多个卡片  左键双击：打开文件夹
-        openfile_s.bind("<Button-1>",self.open_filenames)
+        # 绑定事件，左键单击：打开多个卡片  中键或右键单击：打开文件夹
+        openfile_s.bind("<Button-2>",self.open_dir)
         openfile_s.bind("<Button-3>",self.open_dir)
         #----------------------------------------------------------------------------------
         # 创建Labelframe容器
@@ -71,9 +71,10 @@ class App():
                 font=('StSong', 20, 'bold'),
                 foreground='#8080c0'))
             dText[en].pack(side=LEFT, ipadx=5, ipady=5, padx=15, pady=10)
-        # 绑定右键双击事件触发取倒数
+        # 绑定右键双击或中键单击事件触发取倒数
         for di, dentry in zip(dis, dText):
             dentry.bind("<Double-Button-3>", lambda event, d=di: self.reciprocal(event, d))
+            dentry.bind("<Button-2>", lambda event, d=di: self.reciprocal(event, d))
 
         # for book, d in zip(books, dis):
             # Label(lf, font=('StSong', 20, 'bold'), text=book).pack(side=LEFT, padx=5, pady=10)
@@ -107,11 +108,17 @@ class App():
             command = self.start_work, 
             activebackground='black', activeforeground='white')
         work_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+        # 中建或右键单击：载入测试参数文件
+        work_button.bind("<Button-2>", self.load_para)
+        work_button.bind("<Button-3>", self.load_para)
         export_button = Button(fm2_1, text = 'Export data', font=('@Microsoft YaHei Light', 11, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.save_as_excel, 
             activebackground='black', activeforeground='white')
         export_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+        # 中建或右键单击：保存测试参数文件
+        export_button.bind("<Button-2>", self.save_para)
+        export_button.bind("<Button-3>", self.save_para)
         new_button = Button(fm2_1, text = 'New project', font=('@Microsoft YaHei Light', 11, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.new_path, 
@@ -374,13 +381,13 @@ class App():
         ax.set_ylabel('Intensity(a.u.)')
         plt.show()
 
-    def load_para(self):
+    def load_para(self, event=None):
         self.unloadpara_path = filedialog.askopenfilename(title='打开单个文件',
             filetypes=[("文本文件", "*.txt")], 
             initialdir='C:/Users/Administrator/Desktop')
         try:
             with open(self.unloadpara_path) as measurement:
-                    unloadpara=[float(y) for y in measurement.readline().split(',')]
+                unloadpara=[float(y) for y in measurement.readline().split(',')]
             if len(unloadpara) == 5:
                 self.d1.set(unloadpara[0])
                 self.d2.set(unloadpara[1])
@@ -399,11 +406,13 @@ class App():
             else:
                 messagebox.showinfo(title='提示',message=
                 '所选文件不符合格式!新建一个txt，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数需全部输入或都不输入')
-        except:
+        except FileNotFoundError:
+            pass
+        except ValueError:
             messagebox.showinfo(title='提示',message=
             '所选文件不符合格式!新建一个txt，在第一行依次输入d1、d2、d3、phi12和phi23,用英文输入法的逗号分隔(逗号后不加空格)\n晶面距误差限、夹角误差限及衍射级数可选')
 
-    def save_para(self):
+    def save_para(self, event=None):
         self.parasaving_path = filedialog.asksaveasfilename(title='打开单个文件',
             filetypes=[("文本文件", "*.txt")], 
             initialdir='C:/Users/Administrator/Desktop')
@@ -420,7 +429,12 @@ class App():
         '"No Crystal Distance in Card"代表该卡片中没有误差范围内的晶面距')
 
     def tips(self):
-        messagebox.showinfo(title='提示',message='右键双击晶面距输入框，可以对框中的数值取倒数(取四位有效数字)\n')
+        messagebox.showinfo(title='提示',message='"晶面距输入框": 右键双击或中键单击，可以对框中的数值取倒数(取四位有效数字)\n'+
+        '"...": 左键单击--打开多个卡片; 中键或右键单击击--打开文件夹\n'+
+        '"d(h1k1l1)": 左键单击--计算d1的晶面距; 中键或右键单击--交换d1和d2的米勒指数\n'+
+        '"Start work": 中建或右键单击--载入测试参数文件\n'+
+        '"Export data": 中建或右键单击--保存测试参数文件\n'+
+        '"New project": 左键单击--清除当前路径; 左键双击--清除全部')
 
     def about(self):
         messagebox.showinfo(title='关于',message='本项目地址：https://github.com/xieshentoken/dTheta\n欢迎提出建议共同完善。\n\t\t\t作者qq:3468502700')
@@ -553,6 +567,9 @@ class Calcu_Special_Distance(Toplevel):
             command = self.distance, 
             activebackground='black', activeforeground='white')
         d_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+        # 绑定事件 左键单击：计算d1的晶面距 中键或右键单击：交换d1和d2的米勒指数
+        d_button.bind("<Button-2>", self.d1d2_shift)
+        d_button.bind("<Button-3>", self.d1d2_shift)
         phi_button = Button(fm2_1, text = 'Angle', 
             bd=3, width = 10, height = 1, 
             command = self.p1_p2_angle, 
@@ -563,6 +580,15 @@ class Calcu_Special_Distance(Toplevel):
             command = self.clear, 
             activebackground='black', activeforeground='white')
         new_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+
+    def d1d2_shift(self, event=None):
+        h1, k1, l1 = self.h1.get(), self.k1.get(), self.l1.get()
+        self.h1.set(self.h2.get())
+        self.k1.set(self.k2.get())
+        self.l1.set(self.l2.get())
+        self.h2.set(h1)
+        self.k2.set(k1)
+        self.l2.set(l1)
 
     def clear(self):
         self.result.delete(0.0, 'end')
