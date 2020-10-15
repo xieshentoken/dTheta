@@ -102,17 +102,17 @@ class App():
         # 创建第二个容器的子容器----------------------------
         fm2_1 = Frame(fm2)
         fm2_1.pack(side=LEFT, fill=BOTH, expand=YES)
-        work_button = Button(fm2_1, text = 'Start work', font=('@Microsoft YaHei', 12, 'italic'),
+        work_button = Button(fm2_1, text = 'Start work', font=('@Microsoft YaHei Light', 11, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.start_work, 
             activebackground='black', activeforeground='white')
         work_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
-        export_button = Button(fm2_1, text = 'Export data', font=('@Microsoft YaHei', 12, 'italic'),
+        export_button = Button(fm2_1, text = 'Export data', font=('@Microsoft YaHei Light', 11, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.save_as_excel, 
             activebackground='black', activeforeground='white')
         export_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
-        new_button = Button(fm2_1, text = 'New project', font=('@Microsoft YaHei', 12, 'italic'),
+        new_button = Button(fm2_1, text = 'New project', font=('@Microsoft YaHei Light', 11, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.new_path, 
             activebackground='black', activeforeground='white')
