@@ -47,11 +47,13 @@ class App():
             width=24,
             font=('StSong', 20, 'bold'),
             foreground='#8080c0').pack(side=LEFT, ipadx=5, ipady=5)#fill=BOTH, expand=YES)
-        openfile_s = ttk.Button(fm1, text='...',
-            command=self.open_filenames # 绑定open_filenames方法
+        openfile_s = ttk.Button(fm1, text='...', width = 13
+            # command=self.open_filenames # 绑定open_filenames方法
             )
         openfile_s.pack(side=LEFT, ipadx=1, ipady=5)
-            # 不知为何此处绑定双击事件报错："command takes 1 positional argument but 2 were given"
+        # 绑定事件，左键单击：打开多个卡片  左键双击：打开文件夹
+        openfile_s.bind("<Button-1>",self.open_filenames)
+        openfile_s.bind("<Button-3>",self.open_dir)
         #----------------------------------------------------------------------------------
         # 创建Labelframe容器
         lf = ttk.Labelframe(self.window, text='|d1> + |d3> = |d2>',
@@ -60,13 +62,25 @@ class App():
         books = ['d1(Å):', 'd2(Å):', 'd3(Å):']
         self.d1, self.d2, self.d3 = DoubleVar(), DoubleVar(), DoubleVar()
         dis = [self.d1, self.d2, self.d3]
+        dText = []
         # 使用循环创建多个Label和Entry，并放入Labelframe中,用于输入晶面距信息
-        for book, d in zip(books, dis):
+        for book, d, en in zip(books, dis, [0,1,2]):
             Label(lf, font=('StSong', 20, 'bold'), text=book).pack(side=LEFT, padx=5, pady=10)
-            ttk.Entry(lf, textvariable=d,
-                width=3,
+            dText.append(ttk.Entry(lf, textvariable=d,
+                width=4,
                 font=('StSong', 20, 'bold'),
-                foreground='#8080c0').pack(side=LEFT, ipadx=5, ipady=5, padx=15, pady=10)
+                foreground='#8080c0'))
+            dText[en].pack(side=LEFT, ipadx=5, ipady=5, padx=15, pady=10)
+        # 绑定右键双击事件触发取倒数
+        for di, dentry in zip(dis, dText):
+            dentry.bind("<Double-Button-3>", lambda event, d=di: self.reciprocal(event, d))
+
+        # for book, d in zip(books, dis):
+            # Label(lf, font=('StSong', 20, 'bold'), text=book).pack(side=LEFT, padx=5, pady=10)
+            # ttk.Entry(lf, textvariable=d,
+            #     width=4,
+            #     font=('StSong', 20, 'bold'),
+            #     foreground='#8080c0').pack(side=LEFT, ipadx=5, ipady=5, padx=15, pady=10)
         #-----------------------------------------------------------------------------------
         # 创建第二个容器
         fm2 = Frame(self.window)
@@ -75,7 +89,7 @@ class App():
         fm2_0 = Frame(fm2)
         fm2_0.pack(side=LEFT, fill=BOTH, expand=YES)
         self.result = Text(fm2_0, 
-            width=44,
+            width=48,
             height=10,
             font=('StSong', 14),
             foreground='gray')
@@ -88,21 +102,22 @@ class App():
         # 创建第二个容器的子容器----------------------------
         fm2_1 = Frame(fm2)
         fm2_1.pack(side=LEFT, fill=BOTH, expand=YES)
-        work_button = Button(fm2_1, text = 'Start work', 
+        work_button = Button(fm2_1, text = 'Start work', font=('@Microsoft YaHei', 12, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.start_work, 
             activebackground='black', activeforeground='white')
         work_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
-        export_button = Button(fm2_1, text = 'Export data', 
+        export_button = Button(fm2_1, text = 'Export data', font=('@Microsoft YaHei', 12, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.save_as_excel, 
             activebackground='black', activeforeground='white')
         export_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
-        new_button = Button(fm2_1, text = 'New project', 
+        new_button = Button(fm2_1, text = 'New project', font=('@Microsoft YaHei', 12, 'italic'),
             bd=3, width = 10, height = 1, 
             command = self.new_path, 
             activebackground='black', activeforeground='white')
         new_button.pack(side=TOP, ipadx=1, ipady=5, pady=10)
+        new_button.bind("<Double-Button-1>", self.new_project)
 
     # 创建menubar
     def init_menu(self):
@@ -189,7 +204,7 @@ class App():
         # self.window.signout_icon = PhotoImage(name='E:/pydoc/tkinter/images/signout.png')
         pass
     # 新建项目
-    def new_project(self):
+    def new_project(self, event=None):
         self.pdf_path = tuple()
         self.el = 0.1
         self.ael = 5
@@ -213,7 +228,7 @@ class App():
         self.pdf_adr.set('')
         self.result.delete(0.0, 'end')
 
-    def open_filenames(self):
+    def open_filenames(self, event=None):
         # 调用askopenfile方法获取多个打开的文件名
         # pdf_path为一个tuple
         self.pdf_path = filedialog.askopenfilenames(title='打开多个文件',
@@ -221,8 +236,8 @@ class App():
             initialdir='C:/Users/Administrator/Desktop') # 初始目录
         self.pdf_adr.set(self.pdf_path)
 
-    def open_dir(self):
-            # 调用askdirectory方法打开目录
+    def open_dir(self, event=None):
+        # 调用askdirectory方法打开目录
         self.pdf_path = filedialog.askdirectory(title='打开目录',
             initialdir='C:/Users/Administrator/Desktop') # 初始目录
         self.pdf_adr.set(self.pdf_path)
@@ -250,18 +265,6 @@ class App():
             initialvalue=self.order_n)
 
     def start_work(self):
-        # 输入晶面距时可以以“23+晶面距倒数(单位：埃分之一)”形式输入---------------
-        try:
-            for d in [self.d1, self.d2, self.d3]:
-                if d.get() > 23.:
-                    d.set(float(int(1000/(d.get()-23.)))/1000)
-                elif d.get() == 23.:
-                    d.set(0.)
-                else:
-                    pass
-        except:
-            messagebox.showinfo(title='警告',message='请按有效格式输入参数！')
-        #---------------------------------------------------------------------
         if self.pdf_path:
             if isinstance(self.pdf_path, str):
                 os.chdir(self.pdf_path)
@@ -348,6 +351,12 @@ class App():
                     messagebox.showinfo(title='警告',message='无效的工作表名：{}'.format(card_tit[:31]))
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
+    # 输入晶面距时可以以输入倒易空间中的长度，再双击取倒数---------------
+    def reciprocal(self, event, entry):
+        try:
+            entry.set(int(10000/entry.get())/10000.)
+        except:
+            messagebox.showinfo(title='警告',message='请按有效格式输入参数！')
 
     def select_color(self):
 
@@ -411,8 +420,7 @@ class App():
         '"No Crystal Distance in Card"代表该卡片中没有误差范围内的晶面距')
 
     def tips(self):
-        messagebox.showinfo(title='关于',message='输入晶面距时可以以“23+晶面距倒数(单位：埃分之一)”形式输入\n'+
-        '例如：\n\t测得倒易空间中晶面距为0.238 埃分之一，则在输入晶面距时，输入23.238和输入4.202是等价的')
+        messagebox.showinfo(title='提示',message='右键双击晶面距输入框，可以对框中的数值取倒数(取四位有效数字)\n')
 
     def about(self):
         messagebox.showinfo(title='关于',message='本项目地址：https://github.com/xieshentoken/dTheta\n欢迎提出建议共同完善。\n\t\t\t作者qq:3468502700')
