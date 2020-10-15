@@ -319,12 +319,16 @@ class App():
         if len(self.cal_rsl) > 0:
             save_path = filedialog.asksaveasfilename(title='保存文件', 
             filetypes=[("逗号分隔符文件", "*.csv")], # 只处理的文件类型
-            initialdir='d:/')
-            for rsl, tit in zip(self.cal_rsl, self.title):
-                card_tit = tit[:-2].replace(':','')
-                if rsl.empty == False:
-                    rsl.to_csv(save_path+card_tit+'.csv')
-                    # rsl.to_csv(save_path+tit[:11]+'.csv')
+            initialdir='c:/')
+            try:
+                for rsl, tit in zip(self.cal_rsl, self.title):
+                    # 替换掉CSV文件名称中不能出现的字符
+                    card_tit = tit[:-2].replace(':','').replace('\t','').replace('\n','').replace('*','').replace('/','').replace('?','').replace('<','').replace('>','').replace('|','').replace('"','')
+                    print(card_tit)
+                    if rsl.empty == False:
+                        rsl.to_csv(save_path+card_tit+'.csv')
+            except:
+                messagebox.showinfo(title='警告',message='无效的命名：{}'.format(save_path+card_tit+'.csv'))
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
 
@@ -332,12 +336,16 @@ class App():
         if len(self.cal_rsl) > 0:
             save_path = filedialog.asksaveasfilename(title='保存文件', 
             filetypes=[("office Excel", "*.xls")], # 只处理的文件类型
-            initialdir='/Users/hsh/Desktop/')
+            initialdir='c:/')
             with pd.ExcelWriter(save_path+'.xls') as writer:
-                for rsl, tit in zip(self.cal_rsl, self.title):
-                    card_tit = tit[:-2].replace(':','')
-                    rsl.to_excel(writer, sheet_name=card_tit)
-                    # rsl.to_excel(writer, sheet_name=tit[:11])
+                try:
+                    for rsl, tit in zip(self.cal_rsl, self.title):
+                        # 替换掉excel的工作表名称中不能出现的字符
+                        card_tit = tit[:-2].replace(':','').replace('\\','').replace('*','').replace('/','').replace('?','')
+                        # excel工作表名称长度不能超过31个字符
+                        rsl.to_excel(writer, sheet_name=card_tit[:31])
+                except:
+                    messagebox.showinfo(title='警告',message='无效的工作表名：{}'.format(card_tit[:31]))
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
 
@@ -355,7 +363,6 @@ class App():
             label=example.title, color=self.rgb[1])
         ax.set_xlabel('2Theta (degree)')
         ax.set_ylabel('Intensity(a.u.)')
-        # ax.set_xticks([i for i in range(5,95,10)])
         plt.show()
 
     def load_para(self):
@@ -562,6 +569,7 @@ class Calcu_Special_Distance(Toplevel):
         self.abg = np.array([self.alpha.get()*np.pi/180, self.beta.get()*np.pi/180, self.gamma.get()*np.pi/180])
         self.p1 = np.array([self.h1.get(), self.k1.get(), self.l1.get()])
         # 输出第一行输入的晶面间距，以及对应铜靶X射线(λ=1.5418 Å)下的"d(A)     I(f)   I(v)  h  k  l  n^2  2-Theta   Theta  1/(2d)   2pi/d "，默认为一级衍射
+        # Cu靶的Kα1波长为：1.54056 Å；Cu靶Kα1和Kα2的混合波长为：1.5418 Å
         try:
             vol = (1 - np.cos(self.abg[0])**2 - np.cos(self.abg[1])**2 - np.cos(self.abg[2])**2 + 2*np.cos(self.abg[0])*np.cos(self.abg[1])*np.cos(self.abg[2]))**0.5
             cal_distance = vol/(self.hihj(self.p1, self.p1))**0.5
