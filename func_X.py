@@ -55,9 +55,16 @@ class Xyy():
             a = b = c = float(cellPara0[0])
             alpha = beta = gamma = 90.0
         elif self.cryForm == 'Tetragonal':
-            a = b = float(cellPara0[0])
-            c = float(cellPara0[1])
-            if b == c:
+            if (len(cellPara0) == 6)or(len(cellPara0) == 4)or((len(cellPara0) == 3)and(cellPara0[0] == cellPara0[1])):
+                a = float(cellPara0[0])
+                b = float(cellPara0[1])
+                c = float(cellPara0[2])
+            elif (len(cellPara0) == 5)or((len(cellPara0) == 3)and(cellPara0[2] == 90))or(len(cellPara0) == 2):
+                a = b = float(cellPara0[0])
+                c = float(cellPara0[1])
+            else:
+                raise Exception('晶格常数识别错误')
+            if a != b:
                 raise Exception('晶格常数识别错误')
             alpha = beta = gamma = 90.0
         elif self.cryForm == 'Orthorhombic':
