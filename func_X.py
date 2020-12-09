@@ -424,8 +424,8 @@ class Xyy():
                             cal_phi12 = np.arccos(h12/(h11*h22)**0.5)*180./np.pi
                             cal_phi23 = np.arccos(h23/(h22*h33)**0.5)*180./np.pi
                             if (abs(cal_phi12 - self.phi12) <= self.ael)and(abs(cal_phi23 - self.phi23) <= self.ael):
-                                error_phi12 = abs(self.phi12-cal_phi12)/self.phi12
-                                error_phi23 = abs(self.phi23-cal_phi23)/self.phi23
+                                error_phi12 = abs(self.phi12-cal_phi12)#/self.phi12
+                                error_phi23 = abs(self.phi23-cal_phi23)#/self.phi23
                                 error_d1 = abs(self.d1-cal_d1)/self.d1
                                 error_d2 = abs(self.d2-cal_d2)/self.d2
                                 error_d3 = abs(self.d3-cal_d3)/self.d3
@@ -440,7 +440,8 @@ class Xyy():
         else:
             psb_rslt = pd.DataFrame(rs, columns = ['posiible d1', 'posiible d2', 'posiible d3', 'cal_phi<d1,d2>', 'cal_phi<d2,d3>', 'cal_d1', 'cal_d2', 'cal_d3', 'error of phi<d1,d2>', 'error of phi<d2,d3>', 'error of d1', 'error of d2', 'error of d3'])
             psb_rslt[['cal_phi<d1,d2>', 'cal_phi<d2,d3>', 'cal_d1', 'cal_d2', 'cal_d3']]=psb_rslt[['cal_phi<d1,d2>', 'cal_phi<d2,d3>', 'cal_d1', 'cal_d2', 'cal_d3']].round(decimals=2)
-            psb_rslt[['error of phi<d1,d2>', 'error of phi<d2,d3>', 'error of d1', 'error of d2', 'error of d3']]=psb_rslt[['error of phi<d1,d2>', 'error of phi<d2,d3>', 'error of d1', 'error of d2', 'error of d3']].applymap(lambda x:format(x,'.2%'))
+            psb_rslt[['error of phi<d1,d2>', 'error of phi<d2,d3>']]=psb_rslt[['error of phi<d1,d2>', 'error of phi<d2,d3>']].applymap(lambda x: str(format(x,'.3'))+'°')
+            psb_rslt[['error of d1', 'error of d2', 'error of d3']]=psb_rslt[['error of d1', 'error of d2', 'error of d3']].applymap(lambda x:format(x,'.2%'))
 
         return psb_rslt
 # H函数
