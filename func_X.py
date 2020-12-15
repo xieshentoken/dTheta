@@ -48,7 +48,8 @@ class Xyy():
                 cryFormSearch = cryFormRegex.search(i)
                 self.cryForm = cryFormSearch.group()
                 break
-        cellParaSearch = cellParaRegex.findall(self.text[paraIndex])
+        cellParaSearch = cellParaRegex.findall(self.text[paraIndex].split('Pearson')[0])
+        # cellParaSearch = cellParaRegex.findall(self.text[paraIndex])
         cellPara0 = [ cellParaSearch[i][0] for i in range(0, len(cellParaSearch)) ]
         
         if self.cryForm == 'Cubic':
