@@ -17,6 +17,7 @@ class App():
         self.window = window
         self.initWidgets()
 
+        self.workspace = 'C:/Users/Administrator/Desktop'
         self.pdf_path = tuple()
         self.el = 0.1
         self.ael = 5
@@ -42,6 +43,7 @@ class App():
         ttk.Label(fm1, text='File Path:', font=('StSong', 20, 'bold')).pack(side=LEFT, ipadx=5, ipady=5, padx= 10)
         # 创建字符串变量，用于传递PDF卡片地址
         self.pdf_adr = StringVar()
+        self.pdf_adr.set('Input the Address of PDF Card here.')
         # 创建Entry组件，将其textvariable绑定到self.pdf_adr变量
         ttk.Entry(fm1, textvariable=self.pdf_adr,
             width=24,
@@ -60,11 +62,12 @@ class App():
             padding=10)
         lf.pack(side=TOP, fill=BOTH, expand=NO, padx=10, pady=10)
         books = ['d1(Å):', 'd2(Å):', 'd3(Å):']
-        self.d1, self.d2, self.d3 = DoubleVar(), DoubleVar(), DoubleVar()
+        self.d1, self.d2, self.d3 = StringVar(), StringVar(), StringVar()
         dis = [self.d1, self.d2, self.d3]
         dText = []
         # 使用循环创建多个Label和Entry，并放入Labelframe中,用于输入晶面距信息
         for book, d, en in zip(books, dis, [0,1,2]):
+            d.set('0.0')
             Label(lf, font=('StSong', 20, 'bold'), text=book).pack(side=LEFT, padx=5, pady=10)
             dText.append(ttk.Entry(lf, textvariable=d,
                 width=4,
@@ -72,16 +75,11 @@ class App():
                 foreground='#8080c0'))
             dText[en].pack(side=LEFT, ipadx=5, ipady=5, padx=15, pady=10)
         # 绑定右键双击或中键单击事件触发取倒数
+        # 绑定键盘回车事件触发计算数值
         for di, dentry in zip(dis, dText):
             dentry.bind("<Double-Button-3>", lambda event, d=di: self.reciprocal(event, d))
             dentry.bind("<Button-2>", lambda event, d=di: self.reciprocal(event, d))
-
-        # for book, d in zip(books, dis):
-            # Label(lf, font=('StSong', 20, 'bold'), text=book).pack(side=LEFT, padx=5, pady=10)
-            # ttk.Entry(lf, textvariable=d,
-            #     width=4,
-            #     font=('StSong', 20, 'bold'),
-            #     foreground='#8080c0').pack(side=LEFT, ipadx=5, ipady=5, padx=15, pady=10)
+            dentry.bind("<Return>", lambda event, d=di: self.entry_cal(event, d))
         #-----------------------------------------------------------------------------------
         # 创建第二个容器
         fm2 = Frame(self.window)
@@ -138,11 +136,13 @@ class App():
                 ('新建', (None, self.new_project)),
                 ('打开', (None, self.open_filenames)),
                 ('打开文件夹', (None, self.open_dir)),
-                ('另存为', OrderedDict([('CSV',(None, self.save_as_csv)),
-                        ('Excel',(None, self.save_as_excel))])),
+                ('-1', (None, None)),
+                ('设置工作目录', (None, self.set_workspace)),
                 ('载入测试参数', (None, self.load_para)),
                 ('保存测试参数', (None, self.save_para)),
-                ('-1', (None, None)),
+                ('另存为', OrderedDict([('CSV',(None, self.save_as_csv)),
+                        ('Excel',(None, self.save_as_excel))])),
+                ('-2', (None, None)),
                 ('退出', (None, self.window.quit)),
                 ]),
             OrderedDict([('φ12(degree)',(None, self.set_phi12)), 
@@ -212,6 +212,7 @@ class App():
         pass
     # 新建项目
     def new_project(self, event=None):
+        self.workspace = 'C:/Users/Administrator/Desktop'
         self.pdf_path = tuple()
         self.el = 0.1
         self.ael = 5
@@ -221,10 +222,10 @@ class App():
         self.data = []
         self.title = []
         self.cal_rsl = []
-        self.pdf_adr.set('')
-        self.d1.set(0.0)
-        self.d2.set(0.0)
-        self.d3.set(0.0)
+        self.pdf_adr.set('Input the Address of PDF Card here.')
+        self.d1.set('0.0')
+        self.d2.set('0.0')
+        self.d3.set('0.0')
         self.result.delete(0.0, 'end')
     # 新建路径
     def new_path(self):
@@ -232,21 +233,25 @@ class App():
         self.data = []
         self.title = []
         self.cal_rsl = []
-        self.pdf_adr.set('')
+        self.pdf_adr.set('Input the Address of PDF Card here.')
         self.result.delete(0.0, 'end')
+
+    def set_workspace(self, event=None):
+        self.workspace = filedialog.askdirectory(title='设置工作目录',
+            initialdir='C:/Users/Administrator/Desktop')
 
     def open_filenames(self, event=None):
         # 调用askopenfile方法获取多个打开的文件名
         # pdf_path为一个tuple
         self.pdf_path = filedialog.askopenfilenames(title='打开多个文件',
             filetypes=[("文本文件", "*.txt"), ('Python源文件', '*.py')], # 只处理的文件类型
-            initialdir='C:/Users/Administrator/Desktop') # 初始目录
+            initialdir=self.workspace) # 初始目录
         self.pdf_adr.set(self.pdf_path)
 
     def open_dir(self, event=None):
         # 调用askdirectory方法打开目录
         self.pdf_path = filedialog.askdirectory(title='打开目录',
-            initialdir='C:/Users/Administrator/Desktop') # 初始目录
+            initialdir=self.workspace) # 初始目录
         self.pdf_adr.set(self.pdf_path)
         # print(type(self.pdf_path))
         
@@ -260,12 +265,16 @@ class App():
             initialvalue=self.ael, minvalue=0.001, maxvalue=180)
 
     def set_phi12(self):
-        self.phi12 = simpledialog.askfloat("<d1, d2>", "输入测得的d1与d2的夹角(degree):",
-            initialvalue=self.phi12)
+        self.phi12 = float(eval(simpledialog.askstring("<d1, d2>", "输入测得的d1与d2的夹角(degree):",
+            initialvalue=str(self.phi12))))
+        self.result.insert('end', 'φ12='+str(self.phi12)+'°')
+        self.result.insert('end', '\n')
 
     def set_phi23(self):
-        self.phi23 = simpledialog.askfloat("<d2, d3>", "输入测得的d2与d3的夹角(degree):",
-            initialvalue=self.phi23)
+        self.phi23 = float(eval(simpledialog.askstring("<d2, d3>", "输入测得的d2与d3的夹角(degree):",
+            initialvalue=str(self.phi23))))
+        self.result.insert('end', 'φ23='+str(self.phi23)+'°')
+        self.result.insert('end', '\n')
 
     def set_n(self):
         self.order_n = simpledialog.askinteger("衍射级数", "输入点阵的衍射级数n:",
@@ -277,7 +286,8 @@ class App():
                 os.chdir(self.pdf_path)
                 start = time.time()
                 for pdf_path in os.listdir():
-                    example = Xyy(pdf_path, self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23, self.order_n)
+                    example = Xyy(pdf_path, self.el, self.ael, 
+                    eval(self.d1.get()), eval(self.d2.get()), eval(self.d3.get()), self.phi12, self.phi23, self.order_n)
                     try:
                         example.getPdfInfo()
                         self.data.append(example.data)
@@ -301,7 +311,8 @@ class App():
             elif isinstance(self.pdf_path, tuple):
                 start = time.time()
                 for pdf_path in self.pdf_path:
-                    example = Xyy(pdf_path, self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23, self.order_n)
+                    example = Xyy(pdf_path, self.el, self.ael, 
+                    eval(self.d1.get()), eval(self.d2.get()), eval(self.d3.get()), self.phi12, self.phi23, self.order_n)
                     try:
                         example.getPdfInfo()
                         self.data.append(example.data)
@@ -358,21 +369,28 @@ class App():
                     messagebox.showinfo(title='警告',message='无效的工作表名：{}'.format(card_tit[:31]))
         else:
             messagebox.showinfo(title='警告',message='结果为空，请重新选择源文件！')
+    
+    # 晶面距输入框可以输入算式，回车后计算数值--------------------------
+    def entry_cal(self, event, entry):
+        try:
+            entry.set(str(int(10000.*eval(entry.get()))/10000.))
+        except:
+            messagebox.showinfo(title='警告',message='请按有效格式输入参数！(需在英文输入法下输入)')
+
     # 输入晶面距时可以以输入倒易空间中的长度，再双击取倒数---------------
     def reciprocal(self, event, entry):
         try:
-            entry.set(int(10000/entry.get())/10000.)
+            entry.set(str(int(10000/eval(entry.get()))/10000.))
         except:
-            messagebox.showinfo(title='警告',message='请按有效格式输入参数！')
+            messagebox.showinfo(title='警告',message='请按有效格式输入参数！(需在英文输入法下输入)')
 
     def select_color(self):
-
         self.rgb = colorchooser.askcolor(parent=self.window, title='选择线条颜色',
             color = 'black')
         self.result.insert('end', self.rgb)
 
     def plot_card(self):
-        example = Xyy(self.pdf_path[0], self.el, self.ael, self.d1.get(), self.d2.get(), self.d3.get(), self.phi12, self.phi23)
+        example = Xyy(self.pdf_path[0], self.el, self.ael, eval(self.d1.get()), eval(self.d2.get()), eval(self.d3.get()), self.phi12, self.phi23)
         example.getPdfInfo()
         ax = example.data.plot(kind = 'bar', x='2-Theta', y='I(f)', width=0.05, 
             yticks=range(0,150,20), xticks=range(0,90,10),rot=60, fontsize=10, 
@@ -387,21 +405,22 @@ class App():
             initialdir='C:/Users/Administrator/Desktop')
         try:
             with open(self.unloadpara_path) as measurement:
-                unloadpara=[float(y) for y in measurement.readline().split(',')]
+                # unloadpara=[float(y) for y in measurement.readline().split(',')]
+                unloadpara=[y for y in measurement.readline().split(',')]
             if len(unloadpara) == 5:
                 self.d1.set(unloadpara[0])
                 self.d2.set(unloadpara[1])
                 self.d3.set(unloadpara[2])
-                self.phi12 = unloadpara[3]
-                self.phi23 = unloadpara[4]
+                self.phi12 = float(unloadpara[3])
+                self.phi23 = float(unloadpara[4])
             elif len(unloadpara) == 8:
                 self.d1.set(unloadpara[0])
                 self.d2.set(unloadpara[1])
                 self.d3.set(unloadpara[2])
-                self.phi12 = unloadpara[3]
-                self.phi23 = unloadpara[4]
-                self.el = unloadpara[5]
-                self.ael = unloadpara[6]
+                self.phi12 = float(unloadpara[3])
+                self.phi23 = float(unloadpara[4])
+                self.el = float(unloadpara[5])
+                self.ael = float(unloadpara[6])
                 self.order_n = int(unloadpara[7])
             else:
                 messagebox.showinfo(title='提示',message=
@@ -429,7 +448,8 @@ class App():
         '"No Crystal Distance in Card"代表该卡片中没有误差范围内的晶面距')
 
     def tips(self):
-        messagebox.showinfo(title='提示',message='"晶面距输入框": 右键双击或中键单击，可以对框中的数值取倒数(取四位有效数字)\n'+
+        messagebox.showinfo(title='提示',message='"晶面距输入框": 右键双击或中键单击，可以对框中的数值取倒数(取四位有效数字);\n'+
+        '可以输入算式，键盘回车键计算数值\n'+
         '"...": 左键单击--打开多个卡片; 中键或右键单击击--打开文件夹\n'+
         '"d(h1k1l1)": 左键单击--计算d1的晶面距; 中键或右键单击--交换d1和d2的米勒指数\n'+
         '"Start work": 中建或右键单击--载入测试参数文件\n'+
